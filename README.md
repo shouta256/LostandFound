@@ -45,6 +45,8 @@ Document environment variables, configuration files, and safe defaults here.
 
 ## Contributing
 
+New to GitHub? Read the [GitHub Beginner Guide](GITHUB_GUIDE.md) for the clone, edit, commit, and push workflow.
+
 1. Create a branch for your change.
 2. Make and test your changes.
 3. Open a pull request with a clear description.
