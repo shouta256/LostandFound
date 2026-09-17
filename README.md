@@ -1,16 +1,19 @@
 # Lost and Found
 
-> A brief description of the project goes here.
+> A searchable app that lets students and campus offices post found items or search for lost ones — so items stop ending up forgotten in a drawer.
 
 ## Overview
 
-Explain the problem this project solves, who it is for, and its main capabilities.
-
+Lost items (AirPods, IDs, water bottles) end up in a random office drawer nobody checks, and people just give up looking.
 ## Features
 
-- Feature one
-- Feature two
-- Feature three
+- **Post Found Items** - Students and campus offices can create listings for items they have found.
+- **Search Lost Items** - Users can search for lost items using information such as item name, category, location, or date.
+- **Item Details** - Users can view important information about a lost or found item.
+- **Report Lost Items** - Students can provide information about items they have lost.
+- **Manage Listings** - Users can update or remove their own lost and found listings.
+- **Item Status** - Listings can be updated when an item has been returned to its owner.
+- **Campus-Focused Search** - The system is designed specifically to help students and campus offices manage lost and found items.
 
 ## Getting Started
 
