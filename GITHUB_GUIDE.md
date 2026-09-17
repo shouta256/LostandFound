@@ -1,237 +1,247 @@
-GitHub Beginner Guide
+# GitHub Beginner Guide
 
 Use these steps to download this project, make changes, and send them to GitHub.
 
-GitHub Workflow
+## GitHub Workflow
 
 Follow these rules when working on this project:
 
-Never push directly to the main branch.
+- Never push directly to the main branch.
+- Create a separate branch for each change or task.
+- Open a pull request to merge changes into main.
+- Shota is the primary code reviewer and normally approves pull requests.
+- If Shota creates the pull request, another team member must review and approve it.
+- A pull request needs at least 1 approval before it can be merged into main.
+- After a pull request is merged, start new work from the latest main branch.
 
-Create a separate branch for each change or task.
-
-Open a pull request to merge changes into main.
-
-Shota is the primary code reviewer and normally approves pull requests.
-
-If Shota creates the pull request, another team member must review and approve it.
-
-A pull request needs at least 1 approval before it can be merged into main.
-
-After a pull request is merged, start new work from the latest main branch.
-
-Before you start
+## Before you start
 
 Install Git and create a GitHub account.
 
-Open:
+Open one of the following:
+- **Terminal** on macOS/Linux
+- **Git Bash** on Windows
 
-Terminal on macOS/Linux
-
-Git Bash on Windows
-
-1. Clone the project
+## 1. Clone the project
 
 Run:
 
+```bash
 git clone https://github.com/shouta256/LostandFound.git
 cd LostandFound
+```
 
-This downloads the project into a new LostandFound folder and moves into it.
+This downloads the project into a new LostandFound folder and moves into it. You only need to clone the repository once.
 
-You only need to clone the repository once.
-
-2. Update main
+## 2. Update main
 
 Before starting new work, make sure your local main branch is up to date.
 
+```bash
 git switch main
 git pull origin main
+```
 
 Always update main before creating a new branch.
 
-3. Create a branch
+## 3. Create a branch
 
 Create a new branch for your work.
 
+```bash
 git switch -c my-change
+```
 
-Replace my-change with a short name describing your task.
+Replace `my-change` with a short name describing your task.
 
-Examples:
+**Examples:**
 
+```bash
 git switch -c login-page
 git switch -c lost-item-form
 git switch -c database-setup
 git switch -c fix-navbar
+```
 
 You can check which branch you are currently using with:
 
+```bash
 git branch
+```
 
-The branch with * is your current branch.
+The branch with `*` is your current branch.
 
-Example:
+**Example:**
 
+```
   main
 * lost-item-form
+```
 
-Do not make project changes directly on main.
+**Do not make project changes directly on main.**
 
-4. Write code
+## 4. Write code
 
 Open the project folder in your code editor and make your changes.
 
 After saving your files, check what changed:
 
+```bash
 git status
+```
 
 This shows modified, added, and deleted files.
 
-5. Save your changes with a commit
+## 5. Save your changes with a commit
 
 Add your changes:
 
+```bash
 git add .
+```
 
 Then create a commit:
 
+```bash
 git commit -m "Describe your change"
+```
 
 Use a short message that explains what you changed.
 
-Examples:
+**Examples:**
 
+```bash
 git commit -m "Add lost item form"
 git commit -m "Fix navbar layout"
 git commit -m "Add database connection"
+```
 
-6. Push your branch to GitHub
+## 6. Push your branch to GitHub
 
 Push your branch:
 
+```bash
 git push -u origin my-change
+```
 
-Replace my-change with your actual branch name.
+Replace `my-change` with your actual branch name.
 
-For example:
+**For example:**
 
+```bash
 git push -u origin lost-item-form
+```
 
-The -u option is normally needed only the first time you push a new branch.
+The `-u` option is normally needed only the first time you push a new branch. After that, you can usually use:
 
-After that, you can usually use:
-
+```bash
 git push
+```
 
-Do not push directly to main
+### Do not push directly to main
 
-Do not run:
+Do **not** run:
 
+```bash
 git push origin main
+```
 
-The main branch is protected, so direct pushes are blocked.
+The main branch is protected, so direct pushes are blocked. Changes must go through a pull request.
 
-Changes must go through a pull request.
-
-7. Create a pull request
+## 7. Create a pull request
 
 After pushing your branch, open the repository on GitHub:
 
 https://github.com/shouta256/LostandFound
 
-GitHub will usually show a Compare & pull request button.
+GitHub will usually show a **Compare & pull request** button.
 
 Then:
 
-Click Compare & pull request
+- Click **Compare & pull request**
+- Make sure the base branch is `main`
+- Make sure the compare branch is your branch
+- Add a short title
+- Write a short description of what you changed
+- Create the pull request
 
-Make sure the base branch is main
+**For example:**
 
-Make sure the compare branch is your branch
-
-Add a short title
-
-Write a short description of what you changed
-
-Create the pull request
-
-For example:
-
+```
 base: main ← compare: lost-item-form
+```
 
-8. Code review and approval
+## 8. Code review and approval
 
 Shota is the primary code reviewer for this project.
 
-For most pull requests:
+### For most pull requests:
 
-Create the pull request
-
-Ask Shota to review it
-
-Shota reviews the code
-
-Fix anything requested during the review
-
-Shota approves the pull request
-
-Merge the pull request into main
+1. Create the pull request
+2. Ask Shota to review it
+3. Shota reviews the code
+4. Fix anything requested during the review
+5. Shota approves the pull request
+6. Merge the pull request into main
 
 A pull request requires at least 1 approval before it can be merged.
 
-If Shota creates the pull request
+### If Shota creates the pull request
 
-Shota cannot provide the required approval for his own pull request.
+Shota cannot provide the required approval for his own pull request. In this case:
 
-In this case:
+1. Shota creates the pull request
+2. Another team member reviews it
+3. That team member approves it
+4. The pull request can then be merged
 
-Shota creates the pull request
-
-Another team member reviews it
-
-That team member approves it
-
-The pull request can then be merged
-
-9. Fix problems found during code review
+## 9. Fix problems found during code review
 
 If your pull request has not been merged yet and Shota requests changes, stay on the same branch.
 
 Make the requested changes, then run:
 
+```bash
 git add .
 git commit -m "Fix review comments"
 git push
+```
 
-You do not need to create another pull request.
+You do not need to create another pull request. The existing pull request updates automatically when you push new commits to the same branch.
 
-The existing pull request updates automatically when you push new commits to the same branch.
-
-10. After the pull request is merged
+## 10. After the pull request is merged
 
 Once your pull request has been merged, do not keep using that branch for unrelated work.
 
 Return to main:
 
+```bash
 git switch main
+```
 
 Download the newest version:
 
+```bash
 git pull origin main
+```
 
 Then create a new branch for your next task:
 
+```bash
 git switch -c another-change
+```
 
-For example:
+**For example:**
 
+```bash
 git switch main
 git pull origin main
 git switch -c search-page
+```
 
-The normal workflow is:
+**The normal workflow is:**
 
+```
 main
  ↓
 create new branch
@@ -253,81 +263,102 @@ merge into main
 update local main
  ↓
 create another branch
+```
 
-Updating an existing pull request
+## Updating an existing pull request
 
 If your pull request is still open and you want to add more changes, stay on the same branch.
 
 Run:
 
+```bash
 git add .
 git commit -m "Describe your next change"
 git push
+```
 
-The pull request will automatically include the new commit.
+The pull request will automatically include the new commit. You do not need to create a second pull request.
 
-You do not need to create a second pull request.
-
-If main changed while you were working
+## If main changed while you were working
 
 Sometimes another pull request may be merged into main while you are still working on your branch.
 
-GitHub may show an Update branch option on your pull request.
+GitHub may show an **Update branch** option on your pull request. You can use it to update your branch with the newest changes from main.
 
-You can use it to update your branch with the newest changes from main.
+If there is a merge conflict, do **not** randomly delete conflicting code. Ask Shota if you are unsure how to resolve it.
 
-If there is a merge conflict, do not randomly delete conflicting code. Ask Shota if you are unsure how to resolve it.
+## Helpful commands
 
-Helpful commands
+### Check your current branch
 
-Check your current branch
-
+```bash
 git branch
+```
 
-Check changed files
+### Check changed files
 
+```bash
 git status
+```
 
-Switch to main
+### Switch to main
 
+```bash
 git switch main
+```
 
-Update your local main
+### Update your local main
 
 First switch to main:
 
+```bash
 git switch main
 git pull origin main
+```
 
-Create a new branch
+### Create a new branch
 
+```bash
 git switch -c branch-name
+```
 
-Add changed files
+### Add changed files
 
+```bash
 git add .
+```
 
-Create a commit
+### Create a commit
 
+```bash
 git commit -m "Describe your change"
+```
 
-Push a new branch for the first time
+### Push a new branch for the first time
 
+```bash
 git push -u origin branch-name
+```
 
-Push later commits on the same branch
+### Push later commits on the same branch
 
+```bash
 git push
+```
 
-See recent commits
+### See recent commits
 
+```bash
 git log --oneline
+```
 
-Important
+## Important
 
-Do not use these commands unless you know exactly what they do:
+**Do not use these commands unless you know exactly what they do:**
 
+```bash
 git push --force
 git reset --hard
+```
 
 If you encounter an error, merge conflict, or Git problem that you do not understand, ask Shota before trying to fix it with destructive Git commands.
