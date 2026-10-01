@@ -35,6 +35,24 @@ Lost items (AirPods, IDs, water bottles) end up in a random office drawer nobody
 - Python 3.11 or newer (`python3 --version`)
 - Node.js 20.19+ or 22.12+ with npm (`node --version`)
 - Docker Desktop (must be running before you use `docker compose`)
+- `make` (preinstalled on macOS/Linux; on Windows, use the manual steps below)
+
+### Quick Start (with make)
+
+```bash
+git clone https://github.com/shouta256/LostandFound.git
+cd LostandFound
+make setup    # install Python + frontend dependencies and create .env (run once)
+make up       # start PostgreSQL and the React dev server
+```
+
+Open `http://localhost:5173` to see the React app. Press `Ctrl+C` to stop React, then run `make down` to stop PostgreSQL.
+
+Run `make setup` again whenever dependencies change. It never overwrites an existing `.env`.
+
+### Manual Setup (without make)
+
+These are the same steps `make setup` and `make up` run for you.
 
 ### 1. Clone the repository
 
@@ -109,6 +127,7 @@ To check that React works, run `npm run dev` and open `http://localhost:5173`. Y
 ├── frontend/              # React + TypeScript app (Vite)
 │   ├── src/               # React source code (.tsx)
 │   └── package.json       # Frontend dependencies and npm scripts
+├── Makefile               # make setup / make up / make down
 ├── docker-compose.yml     # Local PostgreSQL (database only)
 ├── .env.example           # Template for your local .env
 ├── README.md              # This file
