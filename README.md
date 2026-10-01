@@ -18,31 +18,69 @@ Lost items (AirPods, IDs, water bottles) end up in a random office drawer nobody
 
 ## Getting Started
 
+> The project is in the environment-setup stage. There is no application code to run yet.
+
+### Tech Stack
+
+- **Backend:** Python, FastAPI, Pydantic
+- **Database:** PostgreSQL (run locally with Docker Compose)
+- **SQLAlchemy** – database access / ORM (work with tables as Python classes)
+- **Alembic** – database schema migrations (a version history of table changes)
+- **pytest** – testing, used for TDD
+- **Frontend:** not decided yet
+
 ### Prerequisites
 
-- Git (for cloning the repository)
-- Node.js and npm (for running the application)
-- A modern web browser (Chrome, Firefox, Safari, or Edge)
+- Git
+- Python 3.11 or newer (`python3 --version`)
+- Docker Desktop (must be running before you use `docker compose`)
 
-### Installation
+### 1. Clone the repository
 
-1. Clone the repository:
 ```bash
 git clone https://github.com/shouta256/LostandFound.git
 cd LostandFound
 ```
 
-2. Install dependencies:
+### 2. Install the Python dependencies
+
+Create a virtual environment (an isolated place for this project's packages) and install:
+
 ```bash
-npm install
+python3 -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r backend/requirements.txt
 ```
 
-3. Start the development server:
+Run `source .venv/bin/activate` again each time you open a new terminal.
+
+### 3. Create your `.env` file
+
 ```bash
-npm start
+cp .env.example .env             # Windows: copy .env.example .env
 ```
 
-The application will open in your browser at `http://localhost:3000`.
+`.env` holds your local database settings. It is ignored by Git — never commit it.
+
+### 4. Start PostgreSQL
+
+```bash
+docker compose up -d
+```
+
+This starts PostgreSQL in the background on `localhost:5432`. Check that it is running (STATUS should say `healthy`):
+
+```bash
+docker compose ps
+```
+
+### 5. Stop PostgreSQL
+
+```bash
+docker compose down
+```
+
+Your data is kept in a Docker volume. To delete the database data completely, run `docker compose down -v`.
 
 ### Usage
 
@@ -56,25 +94,17 @@ The application will open in your browser at `http://localhost:3000`.
 
 ```
 .
-├── src/              # Application source code
-│   ├── components/   # React components
-│   ├── pages/        # Page components
-│   └── App.js        # Main application component
-├── public/           # Static assets
-├── tests/            # Automated tests
-├── .git/             # Git repository
-├── package.json      # Project dependencies and scripts
-├── README.md         # This file
-└── GITHUB_GUIDE.md   # Git workflow guide for contributors
+├── backend/
+│   └── requirements.txt   # Python dependencies
+├── docker-compose.yml     # Local PostgreSQL (database only)
+├── .env.example           # Template for your local .env
+├── README.md              # This file
+└── GITHUB_GUIDE.md        # Git workflow guide for contributors
 ```
 
 ## Configuration
 
-Environment variables and configuration are managed through:
-- `.env` file for local development settings
-- Environment variables for production deployment
-
-No special configuration is required for the initial setup. The application uses default settings for development.
+Local settings live in `.env` (copied from `.env.example`). The defaults are for local development only and work without changes. If port 5432 is already in use on your machine, change `POSTGRES_PORT` in `.env`.
 
 ## Contributing
 
