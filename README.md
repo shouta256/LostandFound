@@ -27,7 +27,7 @@ Lost items (AirPods, IDs, water bottles) end up in a random office drawer nobody
 - **SQLAlchemy** – database access / ORM (work with tables as Python classes)
 - **Alembic** – database schema migrations (a version history of table changes)
 - **pytest** – testing, used for TDD
-- **Frontend:** React (JavaScript), built with Vite
+- **Frontend:** React + TypeScript, built with Vite
 
 ### Prerequisites
 
@@ -106,8 +106,8 @@ To check that React works, run `npm run dev` and open `http://localhost:5173`. Y
 .
 ├── backend/
 │   └── requirements.txt   # Python dependencies
-├── frontend/              # React app (Vite)
-│   ├── src/               # React source code
+├── frontend/              # React + TypeScript app (Vite)
+│   ├── src/               # React source code (.tsx)
 │   └── package.json       # Frontend dependencies and npm scripts
 ├── docker-compose.yml     # Local PostgreSQL (database only)
 ├── .env.example           # Template for your local .env
