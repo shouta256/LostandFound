@@ -27,12 +27,13 @@ Lost items (AirPods, IDs, water bottles) end up in a random office drawer nobody
 - **SQLAlchemy** – database access / ORM (work with tables as Python classes)
 - **Alembic** – database schema migrations (a version history of table changes)
 - **pytest** – testing, used for TDD
-- **Frontend:** not decided yet
+- **Frontend:** React (JavaScript), built with Vite
 
 ### Prerequisites
 
 - Git
 - Python 3.11 or newer (`python3 --version`)
+- Node.js 20.19+ or 22.12+ with npm (`node --version`)
 - Docker Desktop (must be running before you use `docker compose`)
 
 ### 1. Clone the repository
@@ -82,6 +83,15 @@ docker compose down
 
 Your data is kept in a Docker volume. To delete the database data completely, run `docker compose down -v`.
 
+### 6. Install the frontend dependencies
+
+```bash
+cd frontend
+npm install
+```
+
+To check that React works, run `npm run dev` and open `http://localhost:5173`. You should see the Vite + React starter page. Press `Ctrl+C` to stop it.
+
 ### Usage
 
 1. **Browse Found Items** - Visit the homepage to see all items that have been found
@@ -96,6 +106,9 @@ Your data is kept in a Docker volume. To delete the database data completely, ru
 .
 ├── backend/
 │   └── requirements.txt   # Python dependencies
+├── frontend/              # React app (Vite)
+│   ├── src/               # React source code
+│   └── package.json       # Frontend dependencies and npm scripts
 ├── docker-compose.yml     # Local PostgreSQL (database only)
 ├── .env.example           # Template for your local .env
 ├── README.md              # This file
