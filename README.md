@@ -18,7 +18,7 @@ Lost items (AirPods, IDs, water bottles) end up in a random office drawer nobody
 
 ## Getting Started
 
-> The project is in the environment-setup stage. There is no application code to run yet.
+> The backend has a minimal FastAPI skeleton; business endpoints are not implemented yet. See [backend/README.md](backend/README.md) for its structure and startup command.
 
 ### Tech Stack
 
@@ -123,6 +123,8 @@ To check that React works, run `npm run dev` and open `http://localhost:5173`. Y
 ```
 .
 ├── backend/
+│   ├── app/               # FastAPI entry point and API router skeleton
+│   ├── README.md          # Backend structure and startup command
 │   └── requirements.txt   # Python dependencies
 ├── frontend/              # React + TypeScript app (Vite)
 │   ├── src/               # React source code (.tsx)
