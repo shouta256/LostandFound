@@ -1,0 +1,47 @@
+[
+  {
+    "id": "00000000-0000-4000-8000-000000000001",
+    "type": "found",
+    "name": "Blue water bottle",
+    "description": "Blue reusable water bottle with a mountain sticker.",
+    "category": "Accessories",
+    "date": "2026-10-19",
+    "location": "Mabee Library, first floor"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000002",
+    "type": "lost",
+    "name": "Black backpack",
+    "description": "Black backpack with a red keychain on the front pocket.",
+    "category": "Bags",
+    "date": "2026-10-20",
+    "location": "Memorial Union"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000003",
+    "type": "found",
+    "name": "Wireless earbuds",
+    "description": "White wireless earbuds in a plain white charging case.",
+    "category": "Electronics",
+    "date": "2026-10-20",
+    "location": "Henderson Learning Resources Center"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000004",
+    "type": "lost",
+    "name": "Calculus notebook",
+    "description": "Green spiral notebook with handwritten calculus notes.",
+    "category": "School supplies",
+    "date": "2026-10-21",
+    "location": "Stoffer Science Hall"
+  },
+  {
+    "id": "00000000-0000-4000-8000-000000000005",
+    "type": "found",
+    "name": "Gray hoodie",
+    "description": "Gray Washburn hoodie, size medium.",
+    "category": "Clothing",
+    "date": "2026-10-22",
+    "location": "Student Recreation and Wellness Center"
+  }
+]

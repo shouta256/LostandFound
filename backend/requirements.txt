@@ -10,7 +10,7 @@ pydantic-settings>=2.3,<3.0
 
 # Database access (ORM), migrations, and PostgreSQL driver
 sqlalchemy>=2.0,<3.0
-alembic>=1.13,<2.0
+alembic>=1.16,<2.0  # path_separator=os supports checkout paths containing spaces
 psycopg[binary]>=3.2,<4.0
 
 # Testing (TDD); httpx is required by FastAPI's TestClient

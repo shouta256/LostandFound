@@ -18,7 +18,7 @@ Lost items (AirPods, IDs, water bottles) end up in a random office drawer nobody
 
 ## Getting Started
 
-> The backend has a minimal FastAPI skeleton; business endpoints are not implemented yet. See [backend/README.md](backend/README.md) for its structure and startup command.
+> The local app currently displays an item table from PostgreSQL. Google login and other workflows are not implemented yet. See [backend/README.md](backend/README.md) for backend development.
 
 ### Tech Stack
 
@@ -42,11 +42,11 @@ Lost items (AirPods, IDs, water bottles) end up in a random office drawer nobody
 ```bash
 git clone https://github.com/shouta256/LostandFound.git
 cd LostandFound
-make setup    # install Python + frontend dependencies and create .env (run once)
-make up       # start PostgreSQL and the React dev server
+make setup    # install dependencies, create .env, start PostgreSQL, migrate and seed
+make up       # start PostgreSQL, FastAPI, and React
 ```
 
-Open `http://localhost:5173` to see the React app. Press `Ctrl+C` to stop React, then run `make down` to stop PostgreSQL.
+Open `http://127.0.0.1:5173` to see the item table. Press `Ctrl+C` to stop both app servers, then run `make down` to stop PostgreSQL.
 
 Run `make setup` again whenever dependencies change. It never overwrites an existing `.env`.
 
@@ -93,6 +93,17 @@ This starts PostgreSQL in the background on `localhost:5432`. Check that it is r
 docker compose ps
 ```
 
+Before starting the app, apply migrations and insert sample data (from the repository root, with `.venv` activated):
+
+```bash
+python -m alembic -c backend/alembic.ini upgrade head
+cd backend
+python -m app.seed
+cd ..
+```
+
+Repeating setup does not duplicate or overwrite existing sample rows.
+
 ### 5. Stop PostgreSQL
 
 ```bash
@@ -108,7 +119,7 @@ cd frontend
 npm install
 ```
 
-To check that React works, run `npm run dev` and open `http://localhost:5173`. You should see the Vite + React starter page. Press `Ctrl+C` to stop it.
+Start FastAPI in a separate terminal using the [backend instructions](backend/README.md), then run `npm run dev` and open `http://127.0.0.1:5173` to see the item table. Press `Ctrl+C` in both terminals to stop the app.
 
 ### Usage
 
@@ -123,7 +134,7 @@ To check that React works, run `npm run dev` and open `http://localhost:5173`. Y
 ```
 .
 ├── backend/
-│   ├── app/               # FastAPI entry point and API router skeleton
+│   ├── app/               # FastAPI app, SQLAlchemy model, and sample data
 │   ├── README.md          # Backend structure and startup command
 │   └── requirements.txt   # Python dependencies
 ├── frontend/              # React + TypeScript app (Vite)
