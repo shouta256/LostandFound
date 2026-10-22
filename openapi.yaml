@@ -80,6 +80,8 @@ paths:
       tags: [Items]
       operationId: listItems
       summary: Browse or search active lost/found listings (US4-US6).
+      description: Temporarily unauthenticated for local development; authentication will be added with Google login.
+      security: []
       parameters:
         - {$ref: '#/components/parameters/SearchQuery'}
         - {$ref: '#/components/parameters/Limit'}
@@ -89,8 +91,6 @@ paths:
           description: ItemPage.
           content:
             application/json: {schema: {$ref: '#/components/schemas/ItemPage'}}
-        '401': {$ref: '#/components/responses/Unauthenticated'}
-        '403': {$ref: '#/components/responses/Error', description: FORBIDDEN.}
         '422': {$ref: '#/components/responses/Error', description: VALIDATION_ERROR.}
         '500': {$ref: '#/components/responses/Error', description: INTERNAL_ERROR.}
   /items/{item_id}:

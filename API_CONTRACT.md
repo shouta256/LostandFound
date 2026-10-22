@@ -31,4 +31,4 @@
 
 **R3:** Confirm deployment host/allowed origins and Google client configuration, plus server-side logout/revocation if required.
 
-Basis: Milestone 3's US1-US11 acceptance criteria, Milestone 5's claim/pickup model, and the confirmed D1-D8 and R1-R2 decisions; no API implementation is included.
+Basis: Milestone 3's US1-US11 acceptance criteria, Milestone 5's claim/pickup model, and the confirmed D1-D8 and R1-R2 decisions. For the current local development app, item listing temporarily requires no authentication; authentication will be added with Google login. D2-D3 remain the planned authentication workflow.
