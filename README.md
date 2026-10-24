@@ -18,7 +18,7 @@ Lost items (AirPods, IDs, water bottles) end up in a random office drawer nobody
 
 ## Getting Started
 
-> The local app currently displays an item table from PostgreSQL. Google login and other workflows are not implemented yet. See [backend/README.md](backend/README.md) for backend development.
+> The local app shows items from PostgreSQL and supports Google login. See [backend/README.md](backend/README.md) for backend setup.
 
 ### Tech Stack
 
@@ -46,9 +46,9 @@ make setup    # install dependencies, create .env, start PostgreSQL, migrate and
 make up       # start PostgreSQL, FastAPI, and React
 ```
 
-Open `http://127.0.0.1:5173` to see the item table. Press `Ctrl+C` to stop both app servers, then run `make down` to stop PostgreSQL.
+Open `http://localhost:5173` to see the item table and sign in with Google. Press `Ctrl+C` to stop both app servers, then run `make down` to stop PostgreSQL.
 
-Run `make setup` again whenever dependencies change. It never overwrites an existing `.env`.
+Run `make setup` after dependency changes. It fills missing authentication settings in `.env` and keeps existing values.
 
 ### Manual Setup (without make)
 
@@ -77,6 +77,9 @@ Run `source .venv/bin/activate` again each time you open a new terminal.
 
 ```bash
 cp .env.example .env             # Windows: copy .env.example .env
+cd backend
+python -m app.setup_env
+cd ..
 ```
 
 `.env` holds your local database settings. It is ignored by Git — never commit it.
@@ -119,7 +122,7 @@ cd frontend
 npm install
 ```
 
-Start FastAPI in a separate terminal using the [backend instructions](backend/README.md), then run `npm run dev` and open `http://127.0.0.1:5173` to see the item table. Press `Ctrl+C` in both terminals to stop the app.
+Start FastAPI in a separate terminal using the [backend instructions](backend/README.md), then run `npm run dev` and open `http://localhost:5173` to see the item table. Press `Ctrl+C` in both terminals to stop the app.
 
 ### Usage
 

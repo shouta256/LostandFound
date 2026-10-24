@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     postgres_db: str = "lostandfound"
     postgres_host: str = "localhost"
     postgres_port: int = Field(default=5432, ge=1, le=65535)
+    google_client_id: str = ""
+    auth_secret_key: SecretStr = SecretStr("")
 
     @property
     def database_url(self) -> URL:
