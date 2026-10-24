@@ -7,6 +7,19 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
 
 
+class User(Base):
+    __tablename__ = "users"
+    __table_args__ = (
+        CheckConstraint("role IN ('student', 'team_member')", name="ck_users_role"),
+    )
+
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    google_sub: Mapped[str] = mapped_column(String(255), unique=True)
+    email: Mapped[str] = mapped_column(String(320))
+    name: Mapped[str | None]
+    role: Mapped[str] = mapped_column(String(11), default="student")
+
+
 class Item(Base):
     __tablename__ = "items"
     __table_args__ = (
@@ -22,7 +35,6 @@ class Item(Base):
     date: Mapped[date]
     location: Mapped[str] = mapped_column(String(200))
     status: Mapped[str] = mapped_column(String(9), default="available")
-    # User persistence will be added with Google authentication.
     created_by: Mapped[UUID]
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

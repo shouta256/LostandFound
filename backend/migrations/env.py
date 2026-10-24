@@ -1,7 +1,7 @@
 from alembic import context
 
 from app.database import Base, engine
-from app.models import Item  # noqa: F401 -- register table metadata
+from app.models import Item, User  # noqa: F401 -- register table metadata
 
 
 def run_migrations(connection):

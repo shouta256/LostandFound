@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import GoogleLogin from './GoogleLogin'
+import type { AuthSession } from './GoogleLogin'
 import './App.css'
 
 type Item = {
@@ -18,6 +20,7 @@ type ItemPage = {
 }
 
 function App() {
+  const [session, setSession] = useState<AuthSession | null>(null)
   const [page, setPage] = useState<ItemPage | null>(null)
   const [error, setError] = useState('')
 
@@ -43,6 +46,7 @@ function App() {
   return (
     <main>
       <h1>Lost &amp; Found Tracker</h1>
+      <GoogleLogin session={session} onLogin={setSession} />
 
       {!page && !error && <p role="status">Loading items…</p>}
       {error && <p role="alert">{error}</p>}

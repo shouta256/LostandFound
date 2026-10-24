@@ -13,7 +13,7 @@ setup:
 	$(PYTHON) -m venv $(VENV)
 	$(VENV)/bin/pip install --upgrade pip
 	$(VENV)/bin/pip install -r backend/requirements.txt
-	@if [ ! -f .env ]; then cp .env.example .env && echo "Created .env from .env.example"; else echo ".env already exists, leaving it unchanged"; fi
+	cd backend && ../$(VENV)/bin/python -m app.setup_env
 	cd frontend && npm install
 	docker compose up -d --wait
 	$(VENV)/bin/python -m alembic -c backend/alembic.ini upgrade head
@@ -22,7 +22,7 @@ setup:
 
 up:
 	docker compose up -d --wait
-	@echo "Starting FastAPI at http://127.0.0.1:8000 and React at http://127.0.0.1:5173 (Ctrl+C to stop both)."
+	@echo "Starting FastAPI at http://127.0.0.1:8000 and React at http://localhost:5173 (Ctrl+C to stop both)."
 	@trap 'kill "$$backend_pid" 2>/dev/null; wait "$$backend_pid" 2>/dev/null' EXIT; \
 	$(VENV)/bin/python -m uvicorn app.main:app --app-dir backend --reload --host 127.0.0.1 --port 8000 & \
 	backend_pid=$$!; \
