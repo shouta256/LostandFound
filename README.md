@@ -118,6 +118,34 @@ To check that React works, run `npm run dev` and open `http://localhost:5173`. Y
 4. **Search for Items** - Use the search bar to filter items by name, category, location, or date
 5. **Contact Owner** - View item details and contact information to claim your lost item
 
+## Backend Setup and Integration
+
+The database models, migrations, and four item APIs are implemented. The production FastAPI application and authentication are intentionally handled by Prasamsha; no standalone backend server entry point is included yet.
+
+Run from the repository root with Docker Desktop running. Use the Python environment and root `.env` described above; `make setup` prepares both. To install only the backend dependencies manually:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r backend/requirements.txt
+```
+
+Start PostgreSQL, apply the schema migration, and run all tests including PostgreSQL integration:
+
+```bash
+docker compose up -d --wait
+.venv/bin/alembic -c backend/alembic.ini upgrade head
+RUN_POSTGRES_TESTS=1 .venv/bin/python -m pytest
+```
+
+PostgreSQL tests use the configured local database and roll back disposable test records. Without `RUN_POSTGRES_TESTS=1`, PostgreSQL tests are skipped.
+
+Integration checklist for Prasamsha:
+
+- Import `create_items_router` from `backend.app.items` and register `app.include_router(create_items_router(get_current_user))` in the main application. Do not add another `/api/v1` prefix; the router already includes it.
+- Supply a real `get_current_user` dependency that verifies the application bearer token and returns a stored `User` with accessible `id` and `role`. Reuse `backend.app.database.get_db` for one shared session per request, with synchronous database work in workers. Authentication failures need the contract's error body and status, including `WWW-Authenticate: Bearer` for 401 responses; temporary test users are not production authentication.
+- Treat [openapi.yaml](openapi.yaml) as the authoritative API contract and [API_CONTRACT.md](API_CONTRACT.md) as the workflow reference. FastAPI's generated documentation is currently incomplete for request bodies, query parameters, UUID path types, and error responses; configure the main application's documentation to use the checked-in contract.
+- Coordinate claim approval and item status updates around the same item-row locking strategy. Claim approval and its item status change must commit atomically; reuse the existing models and migration history.
+
 ## Project Structure
 
 ```
