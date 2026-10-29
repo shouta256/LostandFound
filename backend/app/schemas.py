@@ -1,14 +1,41 @@
+import re
 from datetime import date, datetime, timezone
-from typing import Literal
+from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints, field_validator
+
+
+ItemName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)]
+ItemDescription = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)]
+ItemCategory = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=80)]
+ItemLocation = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
 
 
 class LoginRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     id_token: str = Field(min_length=1, max_length=16384)
+
+
+class ItemCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    type: Literal["lost", "found"]
+    name: ItemName
+    description: ItemDescription
+    category: ItemCategory
+    date: date
+    location: ItemLocation
+
+    @field_validator("date", mode="before")
+    @classmethod
+    def date_uses_iso_format(cls, value: object) -> object:
+        if isinstance(value, date):
+            return value
+        if not isinstance(value, str) or re.fullmatch(r"\d{4}-\d{2}-\d{2}", value) is None:
+            raise ValueError("Date must use YYYY-MM-DD.")
+        return value
 
 
 class UserResponse(BaseModel):
@@ -45,6 +72,8 @@ class ItemResponse(BaseModel):
     @field_validator("created_at", "updated_at")
     @classmethod
     def timestamps_are_utc(cls, value: datetime) -> datetime:
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
         return value.astimezone(timezone.utc)
 
 
