@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, Query, Response
@@ -16,6 +16,7 @@ from app.schemas import ItemCreate, ItemPage, ItemResponse
 
 router = APIRouter()
 SearchQuery = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
+CategoryQuery = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=80)]
 
 
 @router.post(
@@ -56,6 +57,8 @@ def create_item(
 def read_items(
     db: Annotated[Session, Depends(get_db)],
     q: Annotated[SearchQuery | None, Query()] = None,
+    type: Annotated[Literal["lost", "found"] | None, Query()] = None,
+    category: Annotated[CategoryQuery | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> ItemPage:
@@ -66,6 +69,10 @@ def read_items(
             Item.category.icontains(q, autoescape=True),
             Item.description.icontains(q, autoescape=True),
         ))
+    if type is not None:
+        conditions.append(Item.type == type)
+    if category is not None:
+        conditions.append(func.lower(Item.category) == category.lower())
     total = db.scalar(select(func.count()).select_from(Item).where(*conditions))
     items = db.scalars(
         select(Item).where(*conditions)
