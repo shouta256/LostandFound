@@ -84,6 +84,8 @@ paths:
       security: []
       parameters:
         - {$ref: '#/components/parameters/SearchQuery'}
+        - {$ref: '#/components/parameters/ItemTypeFilter'}
+        - {$ref: '#/components/parameters/CategoryFilter'}
         - {$ref: '#/components/parameters/Limit'}
         - {$ref: '#/components/parameters/Offset'}
       responses:
@@ -285,6 +287,17 @@ components:
       required: false
       schema: {type: string, minLength: 1, maxLength: 200}
       description: Case-insensitive literal substring in name, category, or description.
+    ItemTypeFilter:
+      name: type
+      in: query
+      required: false
+      schema: {type: string, enum: [lost, found]}
+    CategoryFilter:
+      name: category
+      in: query
+      required: false
+      schema: {type: string, minLength: 1, maxLength: 80}
+      description: Case-insensitive exact category match.
   headers:
     NoStore:
       required: true

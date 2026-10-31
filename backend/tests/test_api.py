@@ -50,6 +50,60 @@ def test_get_items_reads_seeded_database(db):
         app.dependency_overrides.clear()
 
 
+@pytest.mark.parametrize(
+    "params, expected_names",
+    [
+        ({"type": "found"}, {"Blue backpack", "Red backpack", "Small pouch", "Gray hoodie"}),
+        ({"category": "bags"}, {"Blue backpack", "Red backpack", "Green backpack"}),
+        ({"category": "  bags  "}, {"Blue backpack", "Red backpack", "Green backpack"}),
+        ({"category": "Bag"}, {"Small pouch"}),
+        ({"category": "Ba"}, set()),
+        ({"type": "found", "category": "bags", "q": "library"}, {"Blue backpack"}),
+        ({"type": "found", "category": "bags", "limit": 1}, {"Blue backpack", "Red backpack"}),
+    ],
+)
+def test_get_items_filters_before_pagination(authenticated_api, params, expected_names):
+    client, db, user, _headers = authenticated_api
+    now = datetime.now(timezone.utc)
+    for item_type, name, category, description, status in [
+        ("found", "Blue backpack", "Bags", "Found in library", "available"),
+        ("found", "Red backpack", "Bags", "Found in gym", "available"),
+        ("lost", "Green backpack", "Bags", "Lost in library", "available"),
+        ("found", "Small pouch", "Bag", "Found in library", "available"),
+        ("found", "Gray hoodie", "Clothing", "Found in library", "available"),
+        ("found", "Returned backpack", "Bags", "Found in library", "returned"),
+    ]:
+        db.add(Item(
+            id=uuid4(), type=item_type, name=name, description=description,
+            category=category, date=date(2026, 10, 20), location="Student center",
+            status=status, created_by=user.id, created_at=now, updated_at=now,
+        ))
+    db.commit()
+
+    response = client.get("/api/v1/items", params=params)
+
+    assert response.status_code == 200
+    page = response.json()
+    assert page["total"] == len(expected_names)
+    assert len(page["data"]) == min(len(expected_names), params.get("limit", 20))
+    assert {item["name"] for item in page["data"]} <= expected_names
+
+
+@pytest.mark.parametrize("params", [
+    {"type": "other"},
+    {"category": ""},
+    {"category": "   "},
+    {"category": "a" * 81},
+])
+def test_get_items_rejects_invalid_filters(authenticated_api, params):
+    client, _db, _user, _headers = authenticated_api
+
+    response = client.get("/api/v1/items", params=params)
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
 def test_create_item_sets_owner_status_and_location(authenticated_api):
     client, db, user, headers = authenticated_api
     response = client.post(
