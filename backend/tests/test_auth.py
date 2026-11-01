@@ -9,7 +9,7 @@ import jwt
 import pytest
 from sqlalchemy import func, select
 
-from app.auth import get_auth_settings, get_current_user
+from app.auth import create_access_token, get_auth_settings, get_current_user
 from app.database import Settings, get_db
 from app.errors import APIError
 from app.main import app
@@ -76,6 +76,29 @@ def test_login_creates_user_and_issues_one_hour_token(client, db, google_verify,
     user.role = "team_member"
     db.commit()
     assert client.get("/protected", headers={"Authorization": f"Bearer {body['access_token']}"}).json()["role"] == "team_member"
+
+
+def test_get_current_user_profile_returns_authenticated_user(client, db, auth_settings):
+    user = User(id=uuid4(), google_sub="profile-user", email="profile@example.com",
+                name="Profile Student", role="student")
+    db.add(user)
+    db.commit()
+    token = create_access_token(user.id, auth_settings)
+
+    response = client.get("/api/v1/users/me", headers={"Authorization": f"Bearer {token}"})
+
+    assert response.status_code == 200
+    assert response.headers["cache-control"] == "no-store"
+    assert response.json() == {
+        "id": str(user.id), "email": "profile@example.com", "name": "Profile Student", "role": "student",
+    }
+
+
+def test_get_current_user_profile_requires_authentication(client):
+    response = client.get("/api/v1/users/me")
+
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "UNAUTHENTICATED"
 
 
 def test_repeat_login_preserves_identity_and_assigned_role(client, db, google_verify):
