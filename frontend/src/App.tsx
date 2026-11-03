@@ -1,4 +1,4 @@
-
+import ReportItem from './ReportItem'
 import { useEffect, useState } from 'react'
 import GoogleLogin from './GoogleLogin'
 import type { AuthSession } from './GoogleLogin'
@@ -46,6 +46,20 @@ function App() {
   const [offset, setOffset] = useState(0)
 
   const [selectedItem, setSelectedItem] = useState<Item | null>(null)
+
+  const [showReportForm, setShowReportForm] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  function handleReportSuccess() {
+    setShowReportForm(false)
+    setSelectedItem(null)
+    setSearch('')
+    setDebouncedSearch('')
+    setFilter('all')
+    setCategory('')
+    setOffset(0)
+    setRefreshKey((value) => value + 1)
+  }
 
   // Wait briefly before sending search requests.
   useEffect(() => {
@@ -117,7 +131,7 @@ function App() {
     void loadItems()
 
     return () => controller.abort()
-  }, [debouncedSearch, filter, category, offset])
+  }, [debouncedSearch, filter, category, offset, refreshKey])
 
   function changeFilter(next: Filter) {
     setFilter(next)
@@ -218,7 +232,8 @@ function App() {
           type="button"
           className="report-button"
           onClick={() => {
-            window.alert('Report Item page is coming soon.')
+            setSelectedItem(null)
+            setShowReportForm(true)
           }}
         >
           + Report lost or found
@@ -237,7 +252,13 @@ function App() {
         </header>
 
         <main className="main-content">
-          {selectedItem ? (
+          {showReportForm ? (
+            <ReportItem
+             session={session}
+             onCancel={() => setShowReportForm(false)}
+            onSuccess={handleReportSuccess}
+          />
+        ) : selectedItem ? (
             <section className="details-view">
               <button
                 type="button"
@@ -299,11 +320,11 @@ function App() {
                 <button
                   type="button"
                   className="hero-button"
-                  onClick={() =>
-                    window.alert(
-                      'Report Item page is coming soon.'
-                    )
-                  }
+                  onClick={() => {
+                    setSelectedItem(null)
+                    setShowReportForm(true)
+                  }}
+
                 >
                   Report an item →
                 </button>
