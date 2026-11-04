@@ -13,7 +13,16 @@ declare global {
       accounts: {
         id: {
           initialize: (options: { client_id: string; callback: (response: { credential: string }) => void }) => void
-          renderButton: (element: HTMLElement, options: { theme: string; size: string }) => void
+          renderButton: (element: HTMLElement, options: {
+            type: string
+            theme: string
+            size: string
+            shape: string
+            text: string
+            logo_alignment: string
+            locale: string
+            width: number
+          }) => void
           disableAutoSelect: () => void
         }
       }
@@ -21,16 +30,16 @@ declare global {
   }
 }
 
-type Props = { session: AuthSession | null; onLogin: (session: AuthSession | null) => void }
+type Props = { onLogin: (session: AuthSession) => void }
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
-export default function GoogleLogin({ session, onLogin }: Props) {
+export default function GoogleLogin({ onLogin }: Props) {
   const button = useRef<HTMLDivElement>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
-    if (!clientId || session) return
+    if (!clientId) return
     const controller = new AbortController()
     let pending = false
 
@@ -62,7 +71,16 @@ export default function GoogleLogin({ session, onLogin }: Props) {
     function renderButton() {
       if (controller.signal.aborted || !window.google || !button.current) return
       window.google.accounts.id.initialize({ client_id: clientId, callback: signIn })
-      window.google.accounts.id.renderButton(button.current, { theme: 'outline', size: 'large' })
+      window.google.accounts.id.renderButton(button.current, {
+        type: 'standard',
+        theme: 'filled_black',
+        size: 'large',
+        shape: 'pill',
+        text: 'signin_with',
+        logo_alignment: 'left',
+        locale: 'en',
+        width: 280,
+      })
     }
 
     const script = document.createElement('script')
@@ -81,32 +99,14 @@ export default function GoogleLogin({ session, onLogin }: Props) {
       script.remove()
       container?.replaceChildren()
     }
-  }, [session, onLogin])
-
-  useEffect(() => {
-    if (!session) return
-    const timeout = window.setTimeout(() => onLogin(null), session.expires_in * 1000)
-    return () => window.clearTimeout(timeout)
-  }, [session, onLogin])
+  }, [onLogin])
 
   return (
     <section className="login" aria-label="Account">
-      {session ? (
-        <>
-          <span>Signed in as {session.user.name || session.user.email}</span>
-          <button type="button" onClick={() => {
-            window.google?.accounts.id.disableAutoSelect()
-            onLogin(null)
-          }}>Sign out</button>
-        </>
-      ) : (
-        <>
-          {!clientId && <p>Google sign-in is not available yet.</p>}
-          <div ref={button} hidden={busy} />
-          {busy && <p role="status">Signing in…</p>}
-          {error && <p role="alert">{error}</p>}
-        </>
-      )}
+      {!clientId && <p>Google sign-in is not available yet.</p>}
+      <div ref={button} hidden={busy} />
+      {busy && <p role="status">Signing in…</p>}
+      {error && <p role="alert">{error}</p>}
     </section>
   )
 }
