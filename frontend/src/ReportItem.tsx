@@ -87,6 +87,7 @@ export default function ReportItem({
         type="button"
         className="back-button"
         onClick={onCancel}
+        disabled={loading}
       >
         ← Back to items
       </button>
@@ -152,18 +153,19 @@ export default function ReportItem({
 
         <label className="report-field">
           Category
-          <select
+          <input
+            type="text"
+            list="item-categories"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
+            placeholder="e.g. Electronics or School supplies"
             required
-          >
-            <option value="">Select a category</option>
+          />
+          <datalist id="item-categories">
             {categories.map((value) => (
-              <option key={value} value={value}>
-                {value}
-              </option>
+              <option key={value} value={value} />
             ))}
-          </select>
+          </datalist>
         </label>
 
         <label className="report-field">
