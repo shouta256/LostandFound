@@ -31,6 +31,8 @@ To use another Google web client, set `GOOGLE_CLIENT_ID` in `.env`. Allow `http:
 
 The backend checks the Google ID token and returns a one-hour application token. The frontend keeps it in memory and clears it on sign-out, expiry, or reload. Sign-out does not revoke the token or sign out of Google. There is no refresh token.
 
-New users are students. Repeat logins keep the user ID and assigned role. For protected routes, import `get_current_user` from `app.auth` and use `Depends(get_current_user)`. It returns the database User with the current role. Send `Authorization: Bearer <access_token>` with requests. In tests, override this dependency. `/users/me` is a separate task.
+New users are students. Repeat logins keep the user ID and assigned role. For protected routes, import `get_current_user` from `app.auth` and use `Depends(get_current_user)`. It returns the database User with the current role. Send `Authorization: Bearer <access_token>` with requests. Use `Depends(require_team_member)` from `app.auth` for team-member-only routes; students receive 403 and unauthenticated requests receive 401. In tests, override the database and authentication settings dependencies.
+
+For local/dev role assignment, activate `.venv`, change to `backend/`, and run `python -m app.set_role student@example.com team_member` (or use `student` to demote). The user must sign in once first, then sign in again to get the new role in the frontend. Email matching is case-insensitive.
 
 For deployment, use a separate Google client and allow the production frontend origin. Set `GOOGLE_CLIENT_ID` for both the frontend build and backend. Store a random `AUTH_SECRET_KEY` of at least 32 bytes in the hosting service's secrets. Use the same key for all backend instances; do not reuse local keys. Confirm deployment settings under R3 in [API_CONTRACT.md](../API_CONTRACT.md).
