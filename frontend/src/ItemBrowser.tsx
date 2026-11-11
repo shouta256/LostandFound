@@ -1,17 +1,9 @@
 import { useEffect, useState } from 'react'
 import type { AuthSession } from './GoogleLogin'
 import ProfileMenu from './ProfileMenu'
-
-type Item = {
-  id: string
-  type: 'lost' | 'found'
-  name: string
-  description: string
-  category: string
-  date: string
-  location: string
-  status: 'available' | 'claimed' | 'returned'
-}
+import { apiRequest, errorMessage } from './api'
+import type { Item } from './api'
+import TeamClaims from './TeamClaims'
 
 type ItemPage = {
   data: Item[]
@@ -37,6 +29,10 @@ type Props = {
 }
 
 function ItemBrowser({ session, onSignOut }: Props) {
+  const [view, setView] = useState<'items' | 'claims'>('items')
+  const [returnBusy, setReturnBusy] = useState(false)
+  const [returnError, setReturnError] = useState('')
+  const isTeamMember = session.user.role === 'team_member'
   const [page, setPage] = useState<ItemPage | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
@@ -60,6 +56,7 @@ function ItemBrowser({ session, onSignOut }: Props) {
 
   // Fetch items from the backend using server-side filters.
   useEffect(() => {
+    if (view !== 'items') return
     const controller = new AbortController()
 
     async function loadItems() {
@@ -119,24 +116,51 @@ function ItemBrowser({ session, onSignOut }: Props) {
     void loadItems()
 
     return () => controller.abort()
-  }, [debouncedSearch, filter, category, offset])
+  }, [debouncedSearch, filter, category, offset, view])
 
   function changeFilter(next: Filter) {
+    setView('items')
+    setReturnError('')
     setFilter(next)
     setOffset(0)
     setSelectedItem(null)
   }
 
   function changeCategory(next: string) {
+    setView('items')
+    setReturnError('')
     setCategory(next)
     setOffset(0)
     setSelectedItem(null)
   }
 
   function changeSearch(next: string) {
+    setView('items')
+    setReturnError('')
     setSearch(next)
     setOffset(0)
     setSelectedItem(null)
+  }
+
+  async function markReturned() {
+    if (returnBusy || !selectedItem || !window.confirm('Mark this item as returned?')) return
+    setReturnBusy(true)
+    setReturnError('')
+    try {
+      const updated = await apiRequest<Item>(`/items/${selectedItem.id}/status`, session.access_token, {
+        method: 'PATCH', body: JSON.stringify({ status: 'returned' }),
+      })
+      setSelectedItem(current => current?.id === updated.id ? updated : current)
+      setPage(current => current ? {
+        ...current,
+        data: current.data.filter(item => item.id !== updated.id),
+        total: Math.max(0, current.total - (current.data.some(item => item.id === updated.id) ? 1 : 0)),
+      } : current)
+    } catch (error) {
+      setReturnError(errorMessage(error))
+    } finally {
+      setReturnBusy(false)
+    }
   }
 
   function handleReport() {
@@ -177,7 +201,7 @@ function ItemBrowser({ session, onSignOut }: Props) {
           <nav className="sidebar-nav" aria-label="Item filters">
             <button
               type="button"
-              className={filter === 'all' ? 'active' : ''}
+              className={view === 'items' && filter === 'all' ? 'active' : ''}
               onClick={() => changeFilter('all')}
             >
               All items
@@ -185,7 +209,7 @@ function ItemBrowser({ session, onSignOut }: Props) {
 
             <button
               type="button"
-              className={filter === 'lost' ? 'active' : ''}
+              className={view === 'items' && filter === 'lost' ? 'active' : ''}
               onClick={() => changeFilter('lost')}
             >
               Lost items
@@ -193,7 +217,7 @@ function ItemBrowser({ session, onSignOut }: Props) {
 
             <button
               type="button"
-              className={filter === 'found' ? 'active' : ''}
+              className={view === 'items' && filter === 'found' ? 'active' : ''}
               onClick={() => changeFilter('found')}
             >
               Found items
@@ -209,7 +233,7 @@ function ItemBrowser({ session, onSignOut }: Props) {
               <button
                 key={name}
                 type="button"
-                className={category === name ? 'active' : ''}
+                className={view === 'items' && category === name ? 'active' : ''}
                 onClick={() =>
                   changeCategory(category === name ? '' : name)
                 }
@@ -219,6 +243,18 @@ function ItemBrowser({ session, onSignOut }: Props) {
             ))}
           </nav>
         </div>
+
+        {isTeamMember && (
+          <div className="sidebar-section">
+            <p className="sidebar-heading">TEAM MEMBER</p>
+            <nav className="sidebar-nav" aria-label="Team member tools">
+              <button type="button" className={view === 'claims' ? 'active' : ''}
+                onClick={() => { setSelectedItem(null); setReturnError(''); setView('claims') }}>
+                Claim review
+              </button>
+            </nav>
+          </div>
+        )}
 
         <button
           type="button"
@@ -238,7 +274,9 @@ function ItemBrowser({ session, onSignOut }: Props) {
         </header>
 
         <main className="main-content">
-          {selectedItem ? (
+          {view === 'claims' && isTeamMember ? (
+            <TeamClaims token={session.access_token} />
+          ) : selectedItem ? (
             <section className="details-view">
               <button
                 type="button"
@@ -278,6 +316,17 @@ function ItemBrowser({ session, onSignOut }: Props) {
 
                 <h3>Description</h3>
                 <p>{selectedItem.description}</p>
+                {isTeamMember && (
+                  <>
+                    {((selectedItem.type === 'lost' && selectedItem.status === 'available') ||
+                      (selectedItem.type === 'found' && selectedItem.status === 'claimed')) && (
+                      <button className="hero-button" type="button" disabled={returnBusy} onClick={() => void markReturned()}>
+                        {returnBusy ? 'Saving...' : 'Mark as returned'}
+                      </button>
+                    )}
+                    {returnError && <p className="error-message" role="alert">{returnError}</p>}
+                  </>
+                )}
               </div>
             </section>
           ) : (
@@ -364,7 +413,7 @@ function ItemBrowser({ session, onSignOut }: Props) {
                           key={item.id}
                           type="button"
                           className="item-card"
-                          onClick={() => setSelectedItem(item)}
+                          onClick={() => { setReturnError(''); setSelectedItem(item) }}
                         >
                           <div className="item-image-placeholder">
                             <span>⌕</span>

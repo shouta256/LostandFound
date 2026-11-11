@@ -79,3 +79,11 @@ def get_current_user(
     if user is None:
         raise error
     return user
+
+
+def require_team_member(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> User:
+    if current_user.role != "team_member":
+        raise APIError(403, "FORBIDDEN", "Team member access is required.")
+    return current_user
