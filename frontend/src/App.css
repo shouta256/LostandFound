@@ -678,3 +678,82 @@ button:focus-visible {
   font-size: 14px;
   color: #555;
 }
+
+.claim-list {
+  display: grid;
+  gap: 12px;
+}
+
+.claim-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
+  padding: 18px;
+  border: 1px solid #e4e5dd;
+  border-radius: 10px;
+  background: white;
+  color: inherit;
+  text-align: left;
+}
+
+.claim-row strong {
+  flex: 1 1 180px;
+}
+
+.status-pill.pending {
+  color: #87531d;
+  background: #fff0dc;
+}
+
+.status-pill.approved {
+  color: #2d7151;
+  background: #e0f3e5;
+}
+
+.status-pill.rejected {
+  color: #a73529;
+  background: #fff0eb;
+}
+
+.details-card {
+  overflow-wrap: anywhere;
+}
+
+.ownership-information {
+  white-space: pre-wrap;
+}
+
+.team-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pickup-form {
+  display: grid;
+  gap: 16px;
+  max-width: 480px;
+  margin-bottom: 24px;
+}
+
+.pickup-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.pickup-form input,
+.pickup-form select {
+  width: 100%;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #a4aca2;
+  border-radius: 6px;
+  font: inherit;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
