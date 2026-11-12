@@ -4,6 +4,7 @@ import ProfileMenu from './ProfileMenu'
 import { apiRequest, errorMessage } from './api'
 import type { Item } from './api'
 import TeamClaims from './TeamClaims'
+import ReportItem from './ReportItem'
 
 type ItemPage = {
   data: Item[]
@@ -29,13 +30,14 @@ type Props = {
 }
 
 function ItemBrowser({ session, onSignOut }: Props) {
-  const [view, setView] = useState<'items' | 'claims'>('items')
+  const [view, setView] = useState<'items' | 'claims' | 'report'>('items')
   const [returnBusy, setReturnBusy] = useState(false)
   const [returnError, setReturnError] = useState('')
   const isTeamMember = session.user.role === 'team_member'
   const [page, setPage] = useState<ItemPage | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
+  const [refreshKey, setRefreshKey] = useState(0)
 
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -116,7 +118,7 @@ function ItemBrowser({ session, onSignOut }: Props) {
     void loadItems()
 
     return () => controller.abort()
-  }, [debouncedSearch, filter, category, offset, view])
+  }, [debouncedSearch, filter, category, offset, view, refreshKey])
 
   function changeFilter(next: Filter) {
     setView('items')
@@ -164,7 +166,8 @@ function ItemBrowser({ session, onSignOut }: Props) {
   }
 
   function handleReport() {
-    window.alert('Report Item page is coming soon.')
+    setSelectedItem(null)
+    setView('report')
   }
 
   const total = page?.total ?? 0
@@ -274,7 +277,17 @@ function ItemBrowser({ session, onSignOut }: Props) {
         </header>
 
         <main className="main-content">
-          {view === 'claims' && isTeamMember ? (
+          {view === 'report' ? (
+            <ReportItem
+              session={session}
+              onCancel={() => setView('items')}
+              onSuccess={() => {
+                setView('items')
+                setOffset(0)
+                setRefreshKey((key) => key + 1)
+              }}
+            />
+          ) : view === 'claims' && isTeamMember ? (
             <TeamClaims token={session.access_token} />
           ) : selectedItem ? (
             <section className="details-view">
