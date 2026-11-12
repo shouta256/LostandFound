@@ -5,6 +5,25 @@ import type { AuthSession } from './GoogleLogin'
 
 type ItemType = 'lost' | 'found'
 
+const reportCopy = {
+  lost: {
+    eyebrow: 'REPORT A LOST ITEM',
+    title: 'Report a lost item',
+    intro: 'Tell us what you lost so the community can help you find it.',
+    dateLabel: 'Date lost',
+    locationLabel: 'Where did you lose it?',
+    submit: 'Submit lost report →',
+  },
+  found: {
+    eyebrow: 'REPORT A FOUND ITEM',
+    title: 'Report a found item',
+    intro: 'Tell us what you found so we can return it to its owner.',
+    dateLabel: 'Date found',
+    locationLabel: 'Where did you find it?',
+    submit: 'Submit found report →',
+  },
+}
+
 type Props = {
   session: AuthSession | null
   onCancel: () => void
@@ -31,6 +50,7 @@ export default function ReportItem({
   const [location, setLocation] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const copy = reportCopy[type]
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -97,39 +117,38 @@ export default function ReportItem({
         ← Back to items
       </button>
 
-      <p className="eyebrow">HELP YOUR CAMPUS COMMUNITY</p>
-      <h1>Report an item</h1>
-      <p className="report-intro">
-        Lost something or found something on campus?
-        Fill out the details below to help reconnect items
-        with their owners.
-      </p>
+      <p className="eyebrow">{copy.eyebrow}</p>
+      <h1>{copy.title}</h1>
+      <p className="report-intro">{copy.intro}</p>
 
-      <form className="report-form" onSubmit={handleSubmit}>
+      <form className={`report-form report-form-${type}`} onSubmit={handleSubmit}>
         <fieldset className="report-type-group">
           <legend>What would you like to report?</legend>
 
-          <label>
-            <input
-              type="radio"
-              name="item-type"
-              value="lost"
-              checked={type === 'lost'}
-              onChange={() => setType('lost')}
-            />
-            Lost item
-          </label>
+          <div className="report-type-toggle">
+            <span className="report-type-thumb" aria-hidden="true" />
+            <label>
+              <input
+                type="radio"
+                name="item-type"
+                value="lost"
+                checked={type === 'lost'}
+                onChange={() => setType('lost')}
+              />
+              <span>Lost item</span>
+            </label>
 
-          <label>
-            <input
-              type="radio"
-              name="item-type"
-              value="found"
-              checked={type === 'found'}
-              onChange={() => setType('found')}
-            />
-            Found item
-          </label>
+            <label>
+              <input
+                type="radio"
+                name="item-type"
+                value="found"
+                checked={type === 'found'}
+                onChange={() => setType('found')}
+              />
+              <span>Found item</span>
+            </label>
+          </div>
         </fieldset>
 
         <label className="report-field">
@@ -175,7 +194,7 @@ export default function ReportItem({
         </label>
 
         <label className="report-field">
-          Date lost or found
+          {copy.dateLabel}
           <input
             type="date"
             value={date}
@@ -185,7 +204,7 @@ export default function ReportItem({
         </label>
 
         <label className="report-field">
-          Location
+          {copy.locationLabel}
           <input
             type="text"
             value={location}
@@ -223,7 +242,7 @@ export default function ReportItem({
             className="hero-button"
             disabled={loading || !session}
           >
-            {loading ? 'Submitting...' : 'Submit report →'}
+            {loading ? 'Submitting...' : copy.submit}
           </button>
         </div>
       </form>
