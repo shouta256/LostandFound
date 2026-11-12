@@ -168,7 +168,7 @@ function ItemBrowser({ session, onSignOut }: Props) {
   function handleReport() {
     setSelectedItem(null)
     setView('report')
-}
+  }
 
   const total = page?.total ?? 0
   const currentPage = Math.floor(offset / LIMIT) + 1
@@ -285,7 +285,7 @@ function ItemBrowser({ session, onSignOut }: Props) {
                 setView('items')
                 setOffset(0)
                 setRefreshKey((key) => key + 1)
-}}
+              }}
             />
           ) : view === 'claims' && isTeamMember ? (
             <TeamClaims token={session.access_token} />

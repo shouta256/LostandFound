@@ -41,6 +41,11 @@ export default function ReportItem({
       return
     }
 
+    if (!name.trim() || !description.trim() || !category.trim() || !location.trim()) {
+      setError('Please fill in every field. Spaces alone are not enough.')
+      return
+    }
+
     setLoading(true)
     setError('')
 
@@ -55,7 +60,7 @@ export default function ReportItem({
           type,
           name: name.trim(),
           description: description.trim(),
-          category,
+          category: category.trim(),
           date,
           location: location.trim(),
         }),
@@ -159,6 +164,7 @@ export default function ReportItem({
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             placeholder="e.g. Electronics or School supplies"
+            maxLength={80}
             required
           />
           <datalist id="item-categories">
