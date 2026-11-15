@@ -736,6 +736,27 @@ button:focus-visible {
   flex: 1 1 180px;
 }
 
+.my-claims-view h1 {
+  font-size: 40px;
+}
+
+.my-claims-view .claim-row:hover {
+  border-color: #52705e;
+  background: #fffefa;
+}
+
+.pickup-box {
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid #d5dbd2;
+  border-radius: 10px;
+  background: #f8f6f0;
+}
+
+.pickup-box h3 {
+  margin-top: 0;
+}
+
 .status-pill.pending {
   color: #87531d;
   background: #fff0dc;

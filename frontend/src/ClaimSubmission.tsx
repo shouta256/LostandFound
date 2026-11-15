@@ -3,7 +3,9 @@ import type { FormEvent } from 'react'
 import type { AuthSession } from './GoogleLogin'
 import { ApiError, apiRequest, errorMessage, type Item } from './api'
 
-export default function ClaimSubmission({ item, session }: { item: Item; session: AuthSession }) {
+export default function ClaimSubmission({ item, session, onViewClaims }: {
+  item: Item; session: AuthSession; onViewClaims?: () => void
+}) {
   const [ownershipInformation, setOwnershipInformation] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -45,7 +47,10 @@ export default function ClaimSubmission({ item, session }: { item: Item; session
       <h3 id="claim-submission-title">Claim this item</h3>
       <p>Describe details that help verify it belongs to you.</p>
       {submitted ? (
-        <p className="claim-success" role="status">Claim submitted for review.</p>
+        <>
+          <p className="claim-success" role="status">Claim submitted for review.</p>
+          {onViewClaims && <button className="hero-button" type="button" onClick={onViewClaims}>View my claims</button>}
+        </>
       ) : (
         <form className="claim-submission-form" onSubmit={submit}>
           <label htmlFor="ownership-information">Ownership information</label>

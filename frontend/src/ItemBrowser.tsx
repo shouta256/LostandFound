@@ -6,6 +6,7 @@ import type { Item } from './api'
 import TeamClaims from './TeamClaims'
 import ReportItem from './ReportItem'
 import ClaimSubmission from './ClaimSubmission'
+import MyClaims from './MyClaims'
 
 type ItemPage = {
   data: Item[]
@@ -31,7 +32,7 @@ type Props = {
 }
 
 function ItemBrowser({ session, onSignOut }: Props) {
-  const [view, setView] = useState<'items' | 'claims' | 'report'>('items')
+  const [view, setView] = useState<'items' | 'claims' | 'my-claims' | 'report'>('items')
   const [returnBusy, setReturnBusy] = useState(false)
   const [returnError, setReturnError] = useState('')
   const [reportNotice, setReportNotice] = useState('')
@@ -173,6 +174,12 @@ function ItemBrowser({ session, onSignOut }: Props) {
     setView('report')
   }
 
+  function viewMyClaims() {
+    setSelectedItem(null)
+    setReturnError('')
+    setView('my-claims')
+  }
+
   const total = page?.total ?? 0
   const currentPage = Math.floor(offset / LIMIT) + 1
   const totalPages = Math.ceil(total / LIMIT)
@@ -250,6 +257,17 @@ function ItemBrowser({ session, onSignOut }: Props) {
           </nav>
         </div>
 
+        {session.user.role === 'student' && (
+          <div className="sidebar-section">
+            <p className="sidebar-heading">MY ACTIVITY</p>
+            <nav className="sidebar-nav" aria-label="My activity">
+              <button type="button" className={view === 'my-claims' ? 'active' : ''} onClick={viewMyClaims}>
+                My claims
+              </button>
+            </nav>
+          </div>
+        )}
+
         {isTeamMember && (
           <div className="sidebar-section">
             <p className="sidebar-heading">TEAM MEMBER</p>
@@ -294,6 +312,8 @@ function ItemBrowser({ session, onSignOut }: Props) {
             />
           ) : view === 'claims' && isTeamMember ? (
             <TeamClaims token={session.access_token} />
+          ) : view === 'my-claims' && session.user.role === 'student' ? (
+            <MyClaims key={session.access_token} token={session.access_token} />
           ) : selectedItem ? (
             <section className="details-view">
               <button
@@ -337,7 +357,8 @@ function ItemBrowser({ session, onSignOut }: Props) {
 
                 <h3>Description</h3>
                 <p>{selectedItem.description}</p>
-                <ClaimSubmission item={selectedItem} session={session} />
+                <ClaimSubmission item={selectedItem} session={session}
+                  onViewClaims={session.user.role === 'student' ? viewMyClaims : undefined} />
                 {isTeamMember && (
                   <>
                     {((selectedItem.type === 'lost' && selectedItem.status === 'available') ||
