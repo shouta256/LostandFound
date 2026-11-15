@@ -8,11 +8,11 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.api.auth import require_json
-from app.auth import get_current_user
+from app.auth import get_current_user, require_team_member
 from app.database import get_db
 from app.errors import APIError
-from app.models import Item, User
-from app.schemas import ItemCreate, ItemPage, ItemResponse
+from app.models import Claim, Item, User
+from app.schemas import ItemCreate, ItemPage, ItemResponse, ItemStatusUpdate
 
 router = APIRouter()
 SearchQuery = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
@@ -91,4 +91,32 @@ def read_item(
     item = db.get(Item, item_id)
     if item is None:
         raise APIError(404, "ITEM_NOT_FOUND", "Item not found.")
+    return ItemResponse.model_validate(item)
+
+
+@router.patch("/items/{item_id}/status", response_model=ItemResponse, operation_id="updateItemStatus",
+              dependencies=[Depends(require_json)])
+def update_item_status(
+    item_id: UUID,
+    body: ItemStatusUpdate,
+    db: Annotated[Session, Depends(get_db)],
+    _team_member: Annotated[User, Depends(require_team_member)],
+) -> ItemResponse:
+    item = db.scalar(select(Item).where(Item.id == item_id).with_for_update())
+    if item is None:
+        raise APIError(404, "ITEM_NOT_FOUND", "Item not found.")
+    if body.status == item.status:
+        return ItemResponse.model_validate(item)
+    allowed = {"found": {"available": "claimed", "claimed": "returned"},
+               "lost": {"available": "returned"}}
+    if allowed[item.type].get(item.status) != body.status:
+        raise APIError(409, "INVALID_STATUS_TRANSITION", "The item status transition is not allowed.")
+    if body.status == "claimed" and db.scalar(select(Claim.id).where(
+        Claim.item_id == item.id, Claim.status == "approved"
+    )) is None:
+        raise APIError(409, "INVALID_STATUS_TRANSITION", "An approved claim is required to mark an item claimed.")
+    item.status = body.status
+    item.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(item)
     return ItemResponse.model_validate(item)

@@ -19,6 +19,7 @@
 
 ## Workflow
 
+- Ownership claims apply to found items only; lost listings are resolved by marking them returned.
 - Submission leaves the item available; approval and the change to claimed succeed together; rejection leaves the item unchanged.
 - Other pending claims require explicit review and cannot be approved while the item is claimed or returned; a manual change to claimed also requires an approved claim.
 - Browse/search excludes returned items, which remain accessible by ID; claimants retain access to their pending/rejected claims without pickup data.
