@@ -137,7 +137,7 @@ paths:
       tags: [Claims]
       operationId: createClaim
       summary: Submit private ownership information for review (US8).
-      description: Sets claimant_id to the authenticated user.
+      description: Sets claimant_id to the authenticated user. Ownership claims apply to found items only; lost items return 409 ITEM_NOT_CLAIMABLE.
       requestBody:
         required: true
         content:

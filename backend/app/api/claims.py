@@ -33,7 +33,7 @@ def create_claim(body: ClaimCreate, db: Annotated[Session, Depends(get_db)],
         raise APIError(404, "ITEM_NOT_FOUND", "Item not found.")
     if item.created_by == user.id:
         raise APIError(403, "FORBIDDEN", "You cannot claim your own listing.")
-    if item.status != "available":
+    if item.type != "found" or item.status != "available":
         raise APIError(409, "ITEM_NOT_CLAIMABLE", "This item is not available for claims.")
     pending_claim = db.scalar(select(Claim.id).where(
         Claim.item_id == item.id,
@@ -99,7 +99,7 @@ def decide_claim(claim_id: UUID, body: ClaimDecision, db: Annotated[Session, Dep
         raise APIError(409, "CLAIM_ALREADY_DECIDED", "This claim has already been decided.")
     if body.status == "approved":
         item = db.scalar(select(Item).where(Item.id == claim.item_id).with_for_update())
-        if item.status != "available":
+        if item.type != "found" or item.status != "available":
             raise APIError(409, "CLAIM_APPROVAL_CONFLICT", "The item is no longer available.")
         item.status = "claimed"
         item.updated_at = datetime.now(timezone.utc)
@@ -118,7 +118,9 @@ def decide_claim(claim_id: UUID, body: ClaimDecision, db: Annotated[Session, Dep
               dependencies=[Depends(require_json)])
 def update_claim_pickup(claim_id: UUID, body: PickupUpdate, db: Annotated[Session, Depends(get_db)],
                         _user: Annotated[User, Depends(require_team_member)], response: Response) -> PickupResponse:
-    claim = _claim_or_404(db, claim_id)
+    claim = db.scalar(select(Claim).where(Claim.id == claim_id).with_for_update())
+    if claim is None:
+        raise APIError(404, "CLAIM_NOT_FOUND", "Claim not found.")
     if claim.status != "approved":
         raise APIError(409, "CLAIM_NOT_APPROVED", "Pickup can only be set for approved claims.")
     pickup = db.get(Pickup, claim.id)

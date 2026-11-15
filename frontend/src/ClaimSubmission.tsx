@@ -9,7 +9,7 @@ export default function ClaimSubmission({ item, session }: { item: Item; session
   const [error, setError] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
-  if (item.status !== 'available' || item.created_by === session.user.id) return null
+  if (item.type !== 'found' || item.status !== 'available' || item.created_by === session.user.id) return null
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()

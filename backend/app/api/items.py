@@ -102,21 +102,21 @@ def update_item_status(
     db: Annotated[Session, Depends(get_db)],
     _team_member: Annotated[User, Depends(require_team_member)],
 ) -> ItemResponse:
-    item = db.get(Item, item_id)
+    item = db.scalar(select(Item).where(Item.id == item_id).with_for_update())
     if item is None:
         raise APIError(404, "ITEM_NOT_FOUND", "Item not found.")
-    allowed = {"available": {"claimed", "returned"}, "claimed": {"returned"}, "returned": set()}
-    if body.status != item.status and body.status not in allowed[item.status]:
+    if body.status == item.status:
+        return ItemResponse.model_validate(item)
+    allowed = {"found": {"available": "claimed", "claimed": "returned"},
+               "lost": {"available": "returned"}}
+    if allowed[item.type].get(item.status) != body.status:
         raise APIError(409, "INVALID_STATUS_TRANSITION", "The item status transition is not allowed.")
-    if body.status == "claimed" and item.type != "found":
-        raise APIError(409, "INVALID_STATUS_TRANSITION", "Lost items cannot be marked claimed.")
     if body.status == "claimed" and db.scalar(select(Claim.id).where(
         Claim.item_id == item.id, Claim.status == "approved"
     )) is None:
         raise APIError(409, "INVALID_STATUS_TRANSITION", "An approved claim is required to mark an item claimed.")
-    if body.status != item.status:
-        item.status = body.status
-        item.updated_at = datetime.now(timezone.utc)
-        db.commit()
-        db.refresh(item)
+    item.status = body.status
+    item.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(item)
     return ItemResponse.model_validate(item)
