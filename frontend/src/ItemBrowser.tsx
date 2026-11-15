@@ -5,6 +5,7 @@ import { apiRequest, errorMessage } from './api'
 import type { Item } from './api'
 import TeamClaims from './TeamClaims'
 import ReportItem from './ReportItem'
+import ClaimSubmission from './ClaimSubmission'
 
 type ItemPage = {
   data: Item[]
@@ -329,6 +330,7 @@ function ItemBrowser({ session, onSignOut }: Props) {
 
                 <h3>Description</h3>
                 <p>{selectedItem.description}</p>
+                <ClaimSubmission item={selectedItem} session={session} />
                 {isTeamMember && (
                   <>
                     {((selectedItem.type === 'lost' && selectedItem.status === 'available') ||
