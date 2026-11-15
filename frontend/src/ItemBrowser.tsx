@@ -34,6 +34,7 @@ function ItemBrowser({ session, onSignOut }: Props) {
   const [view, setView] = useState<'items' | 'claims' | 'report'>('items')
   const [returnBusy, setReturnBusy] = useState(false)
   const [returnError, setReturnError] = useState('')
+  const [reportNotice, setReportNotice] = useState('')
   const isTeamMember = session.user.role === 'team_member'
   const [page, setPage] = useState<ItemPage | null>(null)
   const [error, setError] = useState('')
@@ -168,6 +169,7 @@ function ItemBrowser({ session, onSignOut }: Props) {
 
   function handleReport() {
     setSelectedItem(null)
+    setReportNotice('')
     setView('report')
   }
 
@@ -278,11 +280,13 @@ function ItemBrowser({ session, onSignOut }: Props) {
         </header>
 
         <main className="main-content">
+          {reportNotice && view === 'items' && <p className="report-notice" role="status">{reportNotice}</p>}
           {view === 'report' ? (
             <ReportItem
               session={session}
               onCancel={() => setView('items')}
-              onSuccess={() => {
+              onSuccess={(notice) => {
+                setReportNotice(notice ?? '')
                 setView('items')
                 setOffset(0)
                 setRefreshKey((key) => key + 1)
@@ -303,6 +307,9 @@ function ItemBrowser({ session, onSignOut }: Props) {
               <p className="eyebrow">ITEM DETAILS</p>
               <h1>{selectedItem.name}</h1>
 
+              {selectedItem.photo_url && (
+                <img className="item-photo details-photo" src={selectedItem.photo_url} alt={selectedItem.name} loading="lazy" />
+              )}
               <div className="details-card">
                 <span className={`status-pill ${selectedItem.type}`}>
                   {selectedItem.type.toUpperCase()}
@@ -430,9 +437,11 @@ function ItemBrowser({ session, onSignOut }: Props) {
                           className="item-card"
                           onClick={() => { setReturnError(''); setSelectedItem(item) }}
                         >
-                          <div className="item-image-placeholder">
-                            <span>⌕</span>
-                          </div>
+                          {item.photo_url ? (
+                            <img className="item-photo" src={item.photo_url} alt={item.name} loading="lazy" />
+                          ) : (
+                            <div className="item-image-placeholder"><span>⌕</span></div>
+                          )}
 
                           <div className="item-card-body">
                             <span

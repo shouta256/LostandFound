@@ -1,7 +1,9 @@
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { AuthSession } from './GoogleLogin'
+import { apiRequest } from './api'
+import type { Item } from './api'
 
 type ItemType = 'lost' | 'found'
 
@@ -27,7 +29,7 @@ const reportCopy = {
 type Props = {
   session: AuthSession | null
   onCancel: () => void
-  onSuccess: () => void
+  onSuccess: (notice?: string) => void
 }
 
 const categories = [
@@ -50,7 +52,31 @@ export default function ReportItem({
   const [location, setLocation] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [photo, setPhoto] = useState<File | null>(null)
+  const [photoError, setPhotoError] = useState('')
+  const [preview, setPreview] = useState('')
+  const photoInput = useRef<HTMLInputElement>(null)
   const copy = reportCopy[type]
+
+  useEffect(() => {
+    if (preview) return () => URL.revokeObjectURL(preview)
+  }, [preview])
+
+  function choosePhoto(file: File | null) {
+    setPhotoError('')
+    setPhoto(null)
+    setPreview('')
+    if (file && !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setPhotoError('Choose a JPEG, PNG or WebP photo.')
+    } else if (file && file.size > 5 * 1024 * 1024) {
+      setPhotoError('Photos must be at most 5 MiB.')
+    } else {
+      setPhoto(file)
+      if (file) setPreview(URL.createObjectURL(file))
+      return
+    }
+    if (photoInput.current) photoInput.current.value = ''
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -96,6 +122,17 @@ export default function ReportItem({
         throw new Error('Unable to report item. Please try again.')
       }
 
+      if (photo) {
+        try {
+          const item: Item = await response.json()
+          await apiRequest<Item>(`/items/${item.id}/photo`, session.access_token, {
+            method: 'PUT', headers: { 'Content-Type': photo.type }, body: photo,
+          })
+        } catch {
+          onSuccess('Your item was reported, but the photo could not be uploaded.')
+          return
+        }
+      }
       onSuccess()
     } catch (err) {
       setError(
@@ -214,6 +251,29 @@ export default function ReportItem({
             required
           />
         </label>
+
+        <label className="report-field">
+          Photo (optional)
+          <input
+            ref={photoInput}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            disabled={loading}
+            aria-describedby={photoError ? 'photo-error' : undefined}
+            aria-invalid={!!photoError}
+            onChange={(event) => choosePhoto(event.target.files?.[0] ?? null)}
+          />
+        </label>
+        {photoError && <p id="photo-error" className="error-message" role="alert">{photoError}</p>}
+        {photo && (
+          <div className="report-photo">
+            {preview && <img className="photo-preview" src={preview} alt="Selected item photo" />}
+            <button type="button" className="report-cancel" disabled={loading} onClick={() => {
+              choosePhoto(null)
+              if (photoInput.current) photoInput.current.value = ''
+            }}>Remove photo</button>
+          </div>
+        )}
 
         {!session && (
           <p className="report-notice">

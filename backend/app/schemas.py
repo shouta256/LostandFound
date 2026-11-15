@@ -68,6 +68,7 @@ class ItemResponse(BaseModel):
     created_by: UUID
     created_at: datetime
     updated_at: datetime
+    photo_url: str | None
 
     @field_validator("created_at", "updated_at")
     @classmethod

@@ -14,6 +14,7 @@
 | D6 | Found items follow available -> claimed -> returned; lost items follow available -> returned; only team members change status, with no reversal or cancellation. |
 | D7 | Ban own-listing claims and a second pending claim by the same user for the same item; allow reapplication after rejection while the item is available, with no withdrawal. |
 | D8 | Search fields, newest-first ordering, and pagination are defined by OpenAPI's q, limit, and offset parameters. |
+| D9 | Items may have one optional photo (JPEG, PNG or WebP, at most 5 MiB) uploaded by the item's creator after creation; photos are public like listings. |
 | R1 | Rejection status codes and error codes are defined in each OpenAPI operation. |
 | R2 | Approval, pickup readiness, and physical return are separate stages; pickup access and data are defined in OpenAPI. |
 
@@ -32,4 +33,4 @@
 
 **R3:** Confirm deployment host/allowed origins and Google client configuration, plus server-side logout/revocation if required.
 
-Basis: Milestone 3's US1-US11 acceptance criteria, Milestone 5's claim/pickup model, and the confirmed D1-D8 and R1-R2 decisions. For the current local development app, item listing temporarily requires no authentication; authentication will be added with Google login. D2-D3 remain the planned authentication workflow.
+Basis: Milestone 3's US1-US11 acceptance criteria, Milestone 5's claim/pickup model, and the confirmed D1-D9 and R1-R2 decisions. For the current local development app, item listing temporarily requires no authentication; authentication will be added with Google login. D2-D3 remain the planned authentication workflow.
