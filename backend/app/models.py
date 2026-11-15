@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from uuid import UUID
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, String, Uuid, text
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Index, LargeBinary, String, Uuid, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -37,6 +37,28 @@ class Item(Base):
     status: Mapped[str] = mapped_column(String(9), default="available")
     created_by: Mapped[UUID]
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    photo_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    @property
+    def photo_url(self) -> str | None:
+        if self.photo_updated_at is None:
+            return None
+        return f"/api/v1/items/{self.id}/photo?v={int(self.photo_updated_at.timestamp() * 1000)}"
+
+
+class ItemPhoto(Base):
+    __tablename__ = "item_photos"
+    __table_args__ = (
+        CheckConstraint(
+            "content_type IN ('image/jpeg', 'image/png', 'image/webp')",
+            name="ck_item_photos_content_type",
+        ),
+    )
+
+    item_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("items.id", ondelete="CASCADE"), primary_key=True)
+    content_type: Mapped[str] = mapped_column(String(10))
+    data: Mapped[bytes] = mapped_column(LargeBinary)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 

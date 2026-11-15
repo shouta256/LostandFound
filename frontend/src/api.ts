@@ -10,6 +10,7 @@ export type Item = {
   created_by: string
   created_at: string
   updated_at: string
+  photo_url: string | null
 }
 
 export type Claim = {
@@ -48,7 +49,9 @@ export class ApiError extends Error {
 export async function apiRequest<T>(path: string, token: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers)
   headers.set('Authorization', `Bearer ${token}`)
-  if (init.body != null) headers.set('Content-Type', 'application/json')
+  if (init.body != null && !headers.has('Content-Type') && !(init.body instanceof Blob)) {
+    headers.set('Content-Type', 'application/json')
+  }
   const response = await fetch(`/api/v1${path}`, { ...init, headers })
   const body: unknown = await response.json().catch(() => null)
   if (!response.ok) {

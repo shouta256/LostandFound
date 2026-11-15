@@ -6,6 +6,7 @@ import type { Item } from './api'
 import TeamClaims from './TeamClaims'
 import ReportItem from './ReportItem'
 import ClaimSubmission from './ClaimSubmission'
+import MyClaims from './MyClaims'
 
 type ItemPage = {
   data: Item[]
@@ -31,9 +32,10 @@ type Props = {
 }
 
 function ItemBrowser({ session, onSignOut }: Props) {
-  const [view, setView] = useState<'items' | 'claims' | 'report'>('items')
+  const [view, setView] = useState<'items' | 'claims' | 'my-claims' | 'report'>('items')
   const [returnBusy, setReturnBusy] = useState(false)
   const [returnError, setReturnError] = useState('')
+  const [reportNotice, setReportNotice] = useState('')
   const isTeamMember = session.user.role === 'team_member'
   const [page, setPage] = useState<ItemPage | null>(null)
   const [error, setError] = useState('')
@@ -168,7 +170,14 @@ function ItemBrowser({ session, onSignOut }: Props) {
 
   function handleReport() {
     setSelectedItem(null)
+    setReportNotice('')
     setView('report')
+  }
+
+  function viewMyClaims() {
+    setSelectedItem(null)
+    setReturnError('')
+    setView('my-claims')
   }
 
   const total = page?.total ?? 0
@@ -248,6 +257,17 @@ function ItemBrowser({ session, onSignOut }: Props) {
           </nav>
         </div>
 
+        {session.user.role === 'student' && (
+          <div className="sidebar-section">
+            <p className="sidebar-heading">MY ACTIVITY</p>
+            <nav className="sidebar-nav" aria-label="My activity">
+              <button type="button" className={view === 'my-claims' ? 'active' : ''} onClick={viewMyClaims}>
+                My claims
+              </button>
+            </nav>
+          </div>
+        )}
+
         {isTeamMember && (
           <div className="sidebar-section">
             <p className="sidebar-heading">TEAM MEMBER</p>
@@ -278,11 +298,13 @@ function ItemBrowser({ session, onSignOut }: Props) {
         </header>
 
         <main className="main-content">
+          {reportNotice && view === 'items' && <p className="report-notice" role="status">{reportNotice}</p>}
           {view === 'report' ? (
             <ReportItem
               session={session}
               onCancel={() => setView('items')}
-              onSuccess={() => {
+              onSuccess={(notice) => {
+                setReportNotice(notice ?? '')
                 setView('items')
                 setOffset(0)
                 setRefreshKey((key) => key + 1)
@@ -290,6 +312,8 @@ function ItemBrowser({ session, onSignOut }: Props) {
             />
           ) : view === 'claims' && isTeamMember ? (
             <TeamClaims token={session.access_token} />
+          ) : view === 'my-claims' && session.user.role === 'student' ? (
+            <MyClaims key={session.access_token} token={session.access_token} />
           ) : selectedItem ? (
             <section className="details-view">
               <button
@@ -303,6 +327,9 @@ function ItemBrowser({ session, onSignOut }: Props) {
               <p className="eyebrow">ITEM DETAILS</p>
               <h1>{selectedItem.name}</h1>
 
+              {selectedItem.photo_url && (
+                <img className="item-photo details-photo" src={selectedItem.photo_url} alt={selectedItem.name} loading="lazy" />
+              )}
               <div className="details-card">
                 <span className={`status-pill ${selectedItem.type}`}>
                   {selectedItem.type.toUpperCase()}
@@ -330,7 +357,8 @@ function ItemBrowser({ session, onSignOut }: Props) {
 
                 <h3>Description</h3>
                 <p>{selectedItem.description}</p>
-                <ClaimSubmission item={selectedItem} session={session} />
+                <ClaimSubmission item={selectedItem} session={session}
+                  onViewClaims={session.user.role === 'student' ? viewMyClaims : undefined} />
                 {isTeamMember && (
                   <>
                     {((selectedItem.type === 'lost' && selectedItem.status === 'available') ||
@@ -430,9 +458,11 @@ function ItemBrowser({ session, onSignOut }: Props) {
                           className="item-card"
                           onClick={() => { setReturnError(''); setSelectedItem(item) }}
                         >
-                          <div className="item-image-placeholder">
-                            <span>⌕</span>
-                          </div>
+                          {item.photo_url ? (
+                            <img className="item-photo" src={item.photo_url} alt={item.name} loading="lazy" />
+                          ) : (
+                            <div className="item-image-placeholder"><span>⌕</span></div>
+                          )}
 
                           <div className="item-card-body">
                             <span

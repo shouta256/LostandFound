@@ -3,7 +3,7 @@ info:
   title: Lost & Found Tracker API
   version: 0.1.0
   summary: CM333 MVP API for US1-US11.
-  description: HTTPS JSON API; see API_CONTRACT.md for confirmed workflow and R3.
+  description: HTTPS API with JSON resources and raw image uploads; see API_CONTRACT.md for confirmed workflow and R3.
 servers:
   - url: /api/v1
 security:
@@ -108,6 +108,62 @@ paths:
         '401': {$ref: '#/components/responses/Unauthenticated'}
         '403': {$ref: '#/components/responses/Error', description: FORBIDDEN.}
         '404': {$ref: '#/components/responses/Error', description: ITEM_NOT_FOUND.}
+        '422': {$ref: '#/components/responses/Error', description: VALIDATION_ERROR.}
+        '500': {$ref: '#/components/responses/Error', description: INTERNAL_ERROR.}
+  /items/{item_id}/photo:
+    parameters:
+      - {$ref: '#/components/parameters/ItemId'}
+    put:
+      tags: [Items]
+      operationId: uploadItemPhoto
+      summary: Save or replace the item's optional photo.
+      description: Only the item's creator may upload. At most 5 MiB; bytes must match the declared image type.
+      requestBody:
+        required: true
+        content:
+          image/jpeg: {schema: {type: string, format: binary}}
+          image/png: {schema: {type: string, format: binary}}
+          image/webp: {schema: {type: string, format: binary}}
+      responses:
+        '200':
+          description: Item with its photo URL.
+          headers:
+            Cache-Control: {$ref: '#/components/headers/NoStore'}
+          content:
+            application/json: {schema: {$ref: '#/components/schemas/Item'}}
+        '401': {$ref: '#/components/responses/Unauthenticated'}
+        '403': {$ref: '#/components/responses/Error', description: FORBIDDEN.}
+        '404': {$ref: '#/components/responses/Error', description: ITEM_NOT_FOUND.}
+        '413': {$ref: '#/components/responses/Error', description: PAYLOAD_TOO_LARGE.}
+        '415': {$ref: '#/components/responses/Error', description: UNSUPPORTED_MEDIA_TYPE.}
+        '422': {$ref: '#/components/responses/Error', description: VALIDATION_ERROR.}
+        '500': {$ref: '#/components/responses/Error', description: INTERNAL_ERROR.}
+    get:
+      tags: [Items]
+      operationId: getItemPhoto
+      summary: Get the item's public photo.
+      description: Use the versioned photo_url returned on the Item for caching.
+      security: []
+      parameters:
+        - name: v
+          in: query
+          description: Photo update time in Unix milliseconds, supplied by photo_url.
+          schema: {type: integer}
+      responses:
+        '200':
+          description: Stored photo bytes.
+          headers:
+            Cache-Control:
+              required: true
+              schema: {type: string, const: 'public, max-age=31536000, immutable'}
+            X-Content-Type-Options:
+              required: true
+              schema: {type: string, const: nosniff}
+          content:
+            image/jpeg: {schema: {type: string, format: binary}}
+            image/png: {schema: {type: string, format: binary}}
+            image/webp: {schema: {type: string, format: binary}}
+        '404': {$ref: '#/components/responses/Error', description: ITEM_NOT_FOUND or PHOTO_NOT_FOUND.}
         '422': {$ref: '#/components/responses/Error', description: VALIDATION_ERROR.}
         '500': {$ref: '#/components/responses/Error', description: INTERNAL_ERROR.}
   /items/{item_id}/status:
@@ -346,13 +402,17 @@ components:
       allOf:
         - {$ref: '#/components/schemas/ItemFields'}
         - type: object
-          required: [id, status, created_by, created_at, updated_at]
+          required: [id, status, created_by, created_at, updated_at, photo_url]
           properties:
             id: {$ref: '#/components/schemas/UUID'}
             status: {$ref: '#/components/schemas/ItemStatus'}
             created_by: {$ref: '#/components/schemas/UUID'}
             created_at: {$ref: '#/components/schemas/UtcTimestamp'}
             updated_at: {$ref: '#/components/schemas/UtcTimestamp'}
+            photo_url:
+              type: [string, 'null']
+              readOnly: true
+              description: Public /api/v1/items/{id}/photo?v={Unix milliseconds of photo_updated_at}, or null without a photo.
     ItemStatusUpdate:
       type: object
       additionalProperties: false
@@ -477,7 +537,7 @@ components:
           additionalProperties: false
           required: [code, message, details]
           properties:
-            code: {type: string, enum: [INVALID_JSON, INVALID_GOOGLE_TOKEN, UNAUTHENTICATED, FORBIDDEN, ITEM_NOT_FOUND,
+            code: {type: string, enum: [INVALID_JSON, INVALID_GOOGLE_TOKEN, UNAUTHENTICATED, FORBIDDEN, ITEM_NOT_FOUND, PHOTO_NOT_FOUND, PAYLOAD_TOO_LARGE,
                 CLAIM_NOT_FOUND, ITEM_NOT_CLAIMABLE, DUPLICATE_PENDING_CLAIM, CLAIM_ALREADY_DECIDED, CLAIM_APPROVAL_CONFLICT,
                 CLAIM_NOT_APPROVED, INVALID_STATUS_TRANSITION, UNSUPPORTED_MEDIA_TYPE, VALIDATION_ERROR, INTERNAL_ERROR,
                 AUTH_PROVIDER_UNAVAILABLE]}
