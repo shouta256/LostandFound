@@ -372,3 +372,60 @@ def test_student_claim_reads_are_private_and_pending_pickup_is_null(claims_api):
     forbidden = client.get(f"/api/v1/claims/{other.id}", headers=headers)
     assert forbidden.status_code == 403
     assert forbidden.json()["error"]["code"] == "FORBIDDEN"
+
+def test_create_claim_allows_new_claim_after_rejection(claims_api):  # TC-US8-05
+    client, db, claimant, owner, headers, team, _team_headers = claims_api
+    item = add_item(db, owner)
+    team_id = team.id
+    old = add_claim(db, item, claimant)
+    old.reviewed_by = team_id
+    old.reviewed_at = datetime.now(timezone.utc)
+    old.status = "rejected"
+    db.commit()
+
+    response = client.post(
+        "/api/v1/claims", headers=headers,
+        json={"item_id": str(item.id), "ownership_information": "New details."},
+    )
+
+    assert response.status_code == 201
+    assert response.json()["status"] == "pending"
+
+
+def test_create_claim_rejects_details_over_2000_chars(claims_api):  # TC-US8-10
+    client, db, _claimant, owner, headers, _team, _team_headers = claims_api
+    item = add_item(db, owner)
+
+    response = client.post(
+        "/api/v1/claims", headers=headers,
+        json={"item_id": str(item.id), "ownership_information": "a" * 2001},
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "VALIDATION_ERROR"
+    assert db.scalar(select(Claim.id)) is None
+
+
+def test_create_claim_accepts_details_at_2000_chars(claims_api):  # TC-US8-11
+    client, db, _claimant, owner, headers, _team, _team_headers = claims_api
+    item = add_item(db, owner)
+
+    response = client.post(
+        "/api/v1/claims", headers=headers,
+        json={"item_id": str(item.id), "ownership_information": "a" * 2000},
+    )
+
+    assert response.status_code == 201
+
+
+def test_create_claim_requires_login(claims_api):  # TC-US8-12
+    client, db, _claimant, owner, _headers, _team, _team_headers = claims_api
+    item = add_item(db, owner)
+
+    response = client.post(
+        "/api/v1/claims",
+        json={"item_id": str(item.id), "ownership_information": "Details."},
+    )
+
+    assert response.status_code == 401
+    assert db.scalar(select(Claim.id)) is None
