@@ -373,12 +373,12 @@ def test_student_claim_reads_are_private_and_pending_pickup_is_null(claims_api):
     assert forbidden.status_code == 403
     assert forbidden.json()["error"]["code"] == "FORBIDDEN"
 
+
 def test_create_claim_allows_new_claim_after_rejection(claims_api):  # TC-US8-05
     client, db, claimant, owner, headers, team, _team_headers = claims_api
     item = add_item(db, owner)
-    team_id = team.id
     old = add_claim(db, item, claimant)
-    old.reviewed_by = team_id
+    old.reviewed_by = team.id
     old.reviewed_at = datetime.now(timezone.utc)
     old.status = "rejected"
     db.commit()
@@ -390,6 +390,8 @@ def test_create_claim_allows_new_claim_after_rejection(claims_api):  # TC-US8-05
 
     assert response.status_code == 201
     assert response.json()["status"] == "pending"
+    db.refresh(old)
+    assert old.status == "rejected"
 
 
 def test_create_claim_rejects_details_over_2000_chars(claims_api):  # TC-US8-10
@@ -428,4 +430,5 @@ def test_create_claim_requires_login(claims_api):  # TC-US8-12
     )
 
     assert response.status_code == 401
+    assert response.json()["error"]["code"] == "UNAUTHENTICATED"
     assert db.scalar(select(Claim.id)) is None
